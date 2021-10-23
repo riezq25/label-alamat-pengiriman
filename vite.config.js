@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base:'/label-alamat-pengiriman/',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -12,5 +13,4 @@ export default defineConfig({
   server: {
     open: true,
   },
-  base:'/label-alamat-pengiriman/'
 })
