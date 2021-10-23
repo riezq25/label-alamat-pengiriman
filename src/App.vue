@@ -56,38 +56,30 @@
             <input
               type="file"
               name=""
-              id=""
+              id="excel-selector"
               @change="readExcel"
               accept=".xls, .xlsx"
             />
           </div>
 
           <div class="flex justify-center text-white text-sm gap-4">
-            <button
-              @click="deletePengirim"
-              class="py-2 px-4 bg-red-500 text-white rounded-lg"
-            >
-              Hapus Info Pengirim
+            <button @click="deletePengirim" class="btn btn-danger">
+              Hapus Pengirim
             </button>
             <button
               @click="saveLokal('pengirim', data.pengirim)"
-              class="py-2 px-4 bg-indigo-500 text-white rounded-lg"
+              class="btn btn-primary"
             >
-              Simpan Info Pengirim
+              Simpan Pengirim
             </button>
           </div>
 
-          <div class="flex justify-center text-white text-sm gap-4">
-            <button
-              @click="reset"
-              class="py-2 px-4 bg-red-500 text-white rounded-lg"
-            >
-              Reset
-            </button>
-            <button
-              @click="print('label')"
-              class="py-2 px-4 bg-indigo-500 text-white rounded-lg"
-            >
+          <div
+            class="flex justify-center text-white text-sm gap-4"
+            v-if="data.excel"
+          >
+            <button @click="reset" class="btn btn-secondary">Reset</button>
+            <button @click="print('label')" class="btn btn-primary">
               Print
             </button>
           </div>
@@ -96,15 +88,7 @@
             <button
               @click="prev"
               :disabled="data.current == 0"
-              class="
-                flex
-                items-center
-                px-4
-                py-2
-                text-gray-500
-                bg-gray-300
-                rounded-md
-              "
+              class="btn-pagination"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -146,14 +130,7 @@
             <button
               @click="next"
               :disabled="data.excel.length == data.excel.length - 1"
-              class="
-                px-4
-                py-2
-                text-gray-500
-                bg-gray-300
-                rounded-md
-                hover:bg-blue-400 hover:text-white
-              "
+              class="btn-pagination"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -204,50 +181,54 @@
               tracking-wider
             "
           >
-            
-              <div
-                class="
-                  flex flex-col
-                  divide-y-2 divide-dashed divide-black
-                  gap-y-4
-                "
-              >
-                <!-- Penerima -->
-                <user-area
-                  title="penerima"
-                  :nama="data.penerima.nama"
-                  :alamat="data.penerima.alamat"
-                  :phone="data.penerima.phone"
-                />
-
-                <!-- Pengirim -->
-                <div>
-                  <user-area
-                    class="mt-4"
-                    title="pengirim"
-                    :nama="data.pengirim.nama"
-                    :alamat="data.pengirim.alamat"
-                    :phone="data.pengirim.phone"
-                  />
-                </div>
+            <div
+              class="
+                flex flex-col
+                divide-y-2 divide-dashed divide-black
+                space-y-4
+              "
+            >
+              <div class="w-full">
+                <h3 class="mb-2 text-sm font-semibold capitalize">
+                  Metode Pengiriman
+                </h3>
+                <span>{{
+                  data.penerima.kurir ? data.penerima.kurir : "-"
+                }}</span>
               </div>
 
-              <div class="flex flex-col gap-y-10">
-                <div class="flex flex-col text-sm">
-                  <span class="font-semibold">Total</span>
-                  <span class="capitalize"
-                    >Rp
-                    {{
-                      data.penerima.total ? data.penerima.total : "0"
-                    }},-</span
-                  >
-                </div>
+              <!-- Penerima -->
 
-                <span class="text-center text-xs"
-                  >Terima kasih atas pesanan Anda di toko kami.</span
+              <user-area
+                title="penerima"
+                :nama="data.penerima.nama"
+                :alamat="data.penerima.alamat"
+                :phone="data.penerima.phone"
+              />
+
+              <!-- Pengirim -->
+
+              <user-area
+                title="pengirim"
+                :nama="data.pengirim.nama"
+                :alamat="data.pengirim.alamat"
+                :phone="data.pengirim.phone"
+              />
+            </div>
+
+            <div class="flex flex-col gap-y-10">
+              <div class="flex flex-col text-sm">
+                <span class="font-semibold">Total</span>
+                <span class="capitalize"
+                  >Rp
+                  {{ data.penerima.total ? data.penerima.total : "0" }},-</span
                 >
               </div>
-            
+
+              <span class="text-center text-xs"
+                >Terima kasih atas pesanan Anda di toko kami.</span
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -270,7 +251,7 @@ const data = reactive({
     alamat: "",
     phone: "",
   },
-  penerima: { nama: "", alamat: "", phone: "", total: "" },
+  penerima: { nama: "", alamat: "", phone: "", total: "", kurir: "" },
   excel: null,
   current: 0,
 });
@@ -292,6 +273,7 @@ const deletePengirim = () => {
 };
 
 const readExcel = (e) => {
+  data.current = 0
   var fileReader = new FileReader();
   fileReader.onload = function (event) {
     var workbook = XLSX.read(event.target.result, {
@@ -301,9 +283,8 @@ const readExcel = (e) => {
       let rowObject = XLSX.utils.sheet_to_row_object_array(
         workbook.Sheets[sheet]
       );
-      let jsonObject = JSON.stringify(rowObject);
-      data.excel = JSON.parse(jsonObject);
-
+      data.excel = rowObject;
+      console.log(rowObject);
       setPenerima(0);
     });
   };
@@ -315,6 +296,7 @@ const setPenerima = (i) => {
   data.penerima.total = data.excel[i].bayar;
   data.penerima.phone = data.excel[i]["no hp"];
   data.penerima.alamat = data.excel[i].alamat;
+  data.penerima.kurir = data.excel[i].kurir;
 };
 
 const next = () => {
@@ -339,10 +321,11 @@ const prev = () => {
   }
 };
 const reset = () => {
-  data.current = 0
-  data.excel = null
-  data.penerima = { nama: "", alamat: "", phone: "", total: "" }
-}
+  data.current = 0;
+  data.excel = null;
+  data.penerima = { nama: "", alamat: "", phone: "", total: "", kurir: "" };
+  document.getElementById("excel-selector").value = "";
+};
 
 data.pengirim = readLokal("pengirim");
 </script>
@@ -358,6 +341,43 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+.btn {
+  @apply py-2
+                px-4
+                rounded-lg;
+}
+
+.btn-pagination {
+  @apply flex
+                items-center
+                px-4
+                py-2
+                text-gray-500
+                bg-gray-300
+                hover:bg-blue-400 hover:text-white
+                rounded-md;
+}
+
+.btn-danger {
+  @apply text-white
+                bg-red-600
+                active:ring-4 active:ring-red-200 active:bg-red-700
+                hover:bg-red-700;
+}
+
+.btn-primary {
+  @apply text-white
+                bg-blue-600
+                active:ring-4 active:ring-blue-200 active:bg-blue-700
+                hover:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply text-gray-800  bg-gray-200
+                active:ring-4 active:ring-gray-100 active:bg-gray-300
+                hover:bg-gray-300;
 }
 
 .form-input label {

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <h3 class="mb-2 text-sm font-semibold capitalize">{{title}}</h3>
+    <h3 class="mb-2 text-sm font-semibold capitalize">{{ title }}</h3>
     <div class="grid grid-rows-2 gap-y-2">
       <div class="flex">
         <svg
@@ -48,7 +48,7 @@
           />
         </svg>
 
-        <p class="break-words">
+        <p class="break-all">
           {{ alamat }}
         </p>
       </div>
